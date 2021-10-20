@@ -1,0 +1,3 @@
+psycopg2
+datetime
+yahoo_fin
