@@ -1,7 +1,4 @@
-FROM continuumio/anaconda3:4.4.0
-
-# WORKDIR /script
-
+FROM  python
 
 COPY requirements.txt .
 
@@ -11,4 +8,4 @@ RUN pip install -r requirements.txt
 
 COPY /script .
 
-CMD ["python", "main.py"]
+CMD tail -f /dev/null

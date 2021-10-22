@@ -1,0 +1,39 @@
+version: '3.1'
+services:
+  db:
+    image: postgres
+    container_name: pg
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_USER: postgres
+      POSTGRES_DB: Stocks
+    volumes:
+      - postgre-db:/var/lib/postgresql/data/
+  stock-py:
+    image: stock-py-2
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=1234
+      - POSTGRES_DB=Stocks
+      - POSTGRES_HOST=db
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.stock-py-2.schedule: "@every 15s"
+      ofelia.job-exec.stock-py-2.command: "python main.py"
+  ofelia:
+    image: mcuadros/ofelia:latest
+    restart: always
+    depends_on:
+      - stock-py-2
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:r
+volumes:
+  postgre-db:
+    driver: local
+
+
+
+    

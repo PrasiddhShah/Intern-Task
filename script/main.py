@@ -2,26 +2,34 @@ from yahoo_fin import stock_info
 from datetime import datetime
 import psycopg2
 import createtable
+import os
+# Getting DB connection info from environment variable
+POSTGRES_USER = os.environ["POSTGRES_USER"]
+POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
+POSTGRES_DB = os.environ["POSTGRES_DB"]
+POSTGRES_HOST = os.environ["POSTGRES_HOST"]
 
+#Calling createtable to check if the table exists, if not create table
 createtable.create_db()
-microsoft = stock_info.get_live_price('MSFT')
-amazon = stock_info.get_live_price('AMZN')
-facebook = stock_info.get_live_price('FB')
-apple = stock_info.get_live_price('AAPL')
-google = stock_info.get_live_price('GOOGL')
-now = datetime.now()
-time = now.strftime("%H:%M:%S")
-date = now.strftime("%m/%d/%Y")
 
+# getting present date and time using datetime library 
+now = datetime.now()
+date_time = now.strftime("%m/%d/%Y %H:%M:%S")
+
+# Connecting to postgres DB using psycopg2 library 
 con = psycopg2.connect(
-    host="host.docker.internal",
-    database="Stocks",
-    user="postgres",
-    password="1234",)
+    host = POSTGRES_HOST,
+    database = POSTGRES_DB,
+    user = POSTGRES_USER,
+    password = POSTGRES_PASSWORD,)
 
 cur = con.cursor()
+stock_name=["AMZN", "AAPL","FB" , "GOOGL", "MSFT"]
 
-cur.execute("insert into stock_price (date, time, amazon, apple, facebook, google, microsoft) values (%s, %s, %s, %s, %s, %s, %s)", (date, time, amazon, apple, facebook, google, microsoft))
-print("Stock prices saved")
-con.commit()
+#storing individual stock price in DB
+for name in stock_name:
+    stock_price = stock_info.get_live_price(name)
+    cur.execute("insert into stock_price (date_time, Stock_name, Stock_Price) values (%s, %s, %s)", (date_time, name, stock_price))
+    print("Stock prices saved")
+    con.commit()
 con.close()
